@@ -1,29 +1,65 @@
 <template>
-  <v-app-bar app flat color="#180342" class="px-4">
-    <v-container class="d-flex align-center justify-space-between" fluid>
-
-      <v-img src="@/assets/NextQuest.png" max-height="40" contain class="mr-6" />
-
-      <v-row class="align-center" no-gutters>
-        <v-img src="@/assets/Accueil.png" max-height="40" contain class="mx-3" />
-        <v-img src="@/assets/Menu.png" max-height="40" contain class="mx-3" />
-        <v-img src="@/assets/Recherche.png" max-height="40" contain class="mx-3" />
-        <v-img src="@/assets/Connexion.png" max-height="40" contain class="mx-3" />
-      </v-row>
-    </v-container>
-  </v-app-bar>
+  <b-navbar toggleable="md" type="dark" variant="dark" class="desktop-navbar px-5 py-2" style="background-color: #180342;">
+    <div class="navbar-flex w-100">
+      <router-link to="/" class="nav-item-flex">
+        <img src="@/assets/NextQuest.png" alt="NextQuest Logo" class="nav-img" />
+      </router-link>
+      <router-link to="/accueil" class="nav-item-flex">
+        <img src="@/assets/Accueil.png" alt="Accueil" class="nav-img" />
+      </router-link>
+      <router-link to="/menu" class="nav-item-flex">
+        <img src="@/assets/Menu.png" alt="Menu" class="nav-img" />
+      </router-link>
+      <router-link to="/recherche" class="nav-item-flex">
+        <img src="@/assets/Recherche.png" alt="Recherche" class="nav-img" />
+      </router-link>
+      <router-link to="/connexion" class="nav-item-flex">
+        <img src="@/assets/Connexion.png" alt="Connexion" class="nav-img" />
+      </router-link>
+    </div>
+  </b-navbar>
 </template>
 
 <script>
-
+export default {
+  name: 'NextQuestNavbar'
+}
 </script>
 
 <style scoped>
-.v-img {
-  cursor: pointer;
-  transition: transform 0.2s ease;
+
+.desktop-navbar {
+  background: linear-gradient(to bottom, #000000, #180342);
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 56px;
 }
-.v-img:hover {
+
+.nav-img {
+  height: 18vh;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.navbar-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nav-item-flex {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-img:hover {
   transform: scale(1.05);
 }
+
+.b-navbar-nav {
+  width: 100%;
+}
+
 </style>
