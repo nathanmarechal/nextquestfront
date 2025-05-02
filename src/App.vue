@@ -7,6 +7,7 @@
     <div class="content">
       <router-view></router-view>
     </div>
+    <FooterComponent></FooterComponent>
     <!-- <router-link to="/"></router-link> -->
     <!--<div class="content">-->
       <!--<router-view></router-view>-->
@@ -20,7 +21,9 @@
 export default {
   name: 'App',
   components: {
-    NavBar: () => import('./components/NavBar.vue')
+    NavBar: () => import('./components/NavBar.vue'),
+    // eslint-disable-next-line vue/no-unused-components
+    FooterComponent: () => import('./components/FooterComponent.vue')
   },
 
   data: () => ({
