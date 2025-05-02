@@ -1,10 +1,8 @@
 <template>
   <b-navbar toggleable="md" type="dark" variant="dark" class="desktop-navbar px-5 py-2" style="background-color: #180342;">
     <div class="navbar-flex w-100">
-      <router-link to="/" class="nav-item-flex">
         <img src="@/assets/NextQuest.png" alt="NextQuest Logo" class="nav-img" />
-      </router-link>
-      <router-link to="/accueil" class="nav-item-flex">
+      <router-link to="/" class="nav-item-flex">
         <img src="@/assets/Accueil.png" alt="Accueil" class="nav-img" />
       </router-link>
       <router-link to="/menu" class="nav-item-flex">
