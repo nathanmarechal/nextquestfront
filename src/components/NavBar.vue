@@ -12,7 +12,7 @@
         <img src="@/assets/Recherche.png" alt="Recherche" class="nav-img" />
       </router-link>
       <router-link to="/connexion" class="nav-item-flex">
-        <img src="@/assets/Connexion.png" alt="Connexion" class="nav-img" />
+        <img src="@/assets/Connexion.png" alt="Connexion" class="nav-img" @click.prevent="$emit('openConnexion')" />
       </router-link>
     </div>
   </b-navbar>

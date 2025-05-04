@@ -10,7 +10,7 @@
       <div class="carousel-list" ref="carousel">
         <ul class="slider-content" :style="{ transform: slideTransform }">
           <li v-for="(game, index) in games" :key="index">
-            <img :src="game.image" :alt="game.title" />
+            <router-link :to="`/game/${game.title}`"><img :src="game.image" :alt="game.title" /></router-link>
           </li>
         </ul>
       </div>
@@ -107,16 +107,36 @@ export default {
   display: flex;
   transition: transform 0.5s ease-in-out;
 }
+
 .slider-content li {
   list-style: none;
   flex: 0 0 auto;
-  width: 200px;
-  margin: 0 12px;
+  width: 220px;
+  height: 280px;
+  margin: 0 14px;
+  overflow: hidden;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* optionnel : effet carte */
+  transition: transform 0.3s ease;
 }
+
+.slider-content li:hover {
+  transform: scale(1.03);
+}
+
 .slider-content img {
-  width: 100%;
-  border-radius: 16px;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  display: block;
+  aspect-ratio: 220 / 280;
 }
+
 .arrow {
   width: 64px;
   height: 100%;
