@@ -1,8 +1,11 @@
 <template>
   <footer class="site-footer">
     <div class="footer-content">
-      <img src="@/assets/NextQuest.png" alt="Logo" class="footer-logo" />
-      <p class="footer-text">© 2025 Nathan MARECHAL. Tous droits réservés.</p>
+      <img :src="logo" alt="Logo" class="footer-logo" />
+      <div class="footer-right">
+        <p class="footer-text">© 2025 Nathan MARECHAL. Tous droits réservés.</p>
+        <a href="/CGU" target="_blank" class="cgu-link">CGU</a>
+      </div>
     </div>
   </footer>
 </template>
@@ -39,9 +42,22 @@ export default {
   height: 72px;
 }
 
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .footer-text {
   color: #ccc;
   font-size: 14px;
-  text-align: right;
+  margin: 0;
+}
+
+.cgu-link {
+  color: #FFD700;
+  font-size: 14px;
+  text-decoration: underline;
+  margin-top: 4px;
 }
 </style>

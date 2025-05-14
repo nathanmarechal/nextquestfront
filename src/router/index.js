@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import HomeView from '../views/HomePage.vue'
 import GamePage from '../views/GamePage.vue'
+import CGUPage from '@/views/CGUPage.vue'
 
 Vue.use(VueRouter)
 
@@ -16,6 +17,11 @@ const routes = [
     name: 'GamePage',
     component: GamePage,
     props: true
+  },
+  {
+    path: '/CGU',
+    name: 'CGU',
+    component: CGUPage
   }
 ]
 

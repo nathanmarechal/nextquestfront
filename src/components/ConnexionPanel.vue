@@ -22,7 +22,14 @@
           <input type="password" v-model="password" required />
         </div>
 
-        <button type="submit" class="submit-btn">
+        <div v-if="isSignup" class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" v-model="acceptedCGU" required />
+            J'ai lu et j'accepte les <a href="/CGU" target="_blank">Conditions Générales d'Utilisation</a>.
+          </label>
+        </div>
+
+        <button type="submit" class="submit-btn" :disabled="isSignup && !acceptedCGU">
           {{ isSignup ? 'Créer un compte' : 'Se connecter' }}
         </button>
       </form>
@@ -33,7 +40,6 @@
     </div>
   </transition>
 </template>
-
 <script>
 export default {
   name: 'ConnexionPanel',
@@ -43,7 +49,8 @@ export default {
       isSignup: false,
       email: '',
       username: '',
-      password: ''
+      password: '',
+      acceptedCGU: false
     }
   },
   methods: {
@@ -144,6 +151,22 @@ input {
   cursor: pointer;
   text-decoration: underline;
   font-family: 'Rajdhani', sans-serif;
+}
+
+.checkbox-group label {
+  font-size: 14px;
+  color: white;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+  vertical-align: middle;
+}
+
+.checkbox-group a {
+  color: #FFD700;
+  text-decoration: underline;
 }
 
 .slide-enter-active, .slide-leave-active {

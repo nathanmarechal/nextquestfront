@@ -1,22 +1,40 @@
 <template>
   <div class="carousel-container" @mouseenter="hover = true" @mouseleave="hover = false">
+    <!-- Title / Logo -->
     <div class="title">
       <img :src="logo" alt="Suggestions" class="suggestion-logo" />
     </div>
+
+    <!-- Carousel -->
     <div class="carousel-wrapper">
-      <div v-if="hover" class="arrow prev" @click="prev">
+      <!-- Left Arrow -->
+      <button
+        class="arrow prev"
+        @click="prev"
+        aria-label="Previous games"
+      >
         <img :src="arrowImage" class="arrow-icon rotated" />
-      </div>
+      </button>
+
+      <!-- Sliding Track -->
       <div class="carousel-list" ref="carousel">
         <ul class="slider-content" :style="{ transform: slideTransform }">
-          <li v-for="(game, index) in games" :key="index">
-            <router-link :to="`/game/${game.title}`"><img :src="game.image" :alt="game.title" /></router-link>
+          <li v-for="(game, index) in games" :key="index" class="poster">
+            <router-link :to="`/game/${game.title}`" tabindex="-1">
+              <img :src="game.image" :alt="game.title" draggable="false" />
+            </router-link>
           </li>
         </ul>
       </div>
-      <div v-if="hover" class="arrow next" @click="next">
+
+      <!-- Right Arrow -->
+      <button
+        class="arrow next"
+        @click="next"
+        aria-label="Next games"
+      >
         <img :src="arrowImage" class="arrow-icon" />
-      </div>
+      </button>
     </div>
   </div>
 </template>
@@ -24,9 +42,18 @@
 <script>
 export default {
   props: {
-    games: Array,
-    logo: String,
-    arrowImage: String,
+    games: {
+      type: Array,
+      required: true
+    },
+    logo: {
+      type: String,
+      required: true
+    },
+    arrowImage: {
+      type: String,
+      required: true
+    },
     scrollDirection: {
       type: String,
       default: 'right',
@@ -37,7 +64,10 @@ export default {
     return {
       currentIndex: 0,
       hover: false,
-      slideWidth: 224,
+      /**
+       * Poster width + horizontal gap ( 100px + 16px = 116px )
+       */
+      slideWidth: 116,
       intervalId: null
     }
   },
@@ -48,21 +78,22 @@ export default {
     }
   },
   methods: {
+    visibleCount () {
+      const container = this.$refs.carousel?.clientWidth || 840
+      return Math.floor(container / this.slideWidth)
+    },
     next () {
-      const maxIndex = this.games.length - 5
+      const maxIndex = this.games.length - this.visibleCount()
       this.currentIndex = this.currentIndex >= maxIndex ? 0 : this.currentIndex + 1
     },
     prev () {
-      this.currentIndex = this.currentIndex <= 0 ? this.games.length - 5 : this.currentIndex - 1
+      const maxIndex = this.games.length - this.visibleCount()
+      this.currentIndex = this.currentIndex <= 0 ? maxIndex : this.currentIndex - 1
     },
     startAutoScroll () {
       this.intervalId = setInterval(() => {
         if (!this.hover) {
-          if (this.scrollDirection === 'right') {
-            this.next()
-          } else {
-            this.prev()
-          }
+          this.scrollDirection === 'right' ? this.next() : this.prev()
         }
       }, 2000)
     },
@@ -81,74 +112,129 @@ export default {
 </script>
 
 <style scoped>
+/* ===== Layout ===== */
 .carousel-container {
   width: 100vw;
   overflow: hidden;
-  padding: 20px 0;
+  padding: 24px 0;
 }
+
 .title {
-  padding-left: 36px;
-  padding-bottom: 12px;
-  text-align: left;
+  padding-left: 48px;
+  margin-bottom: 6px;
 }
+
 .suggestion-logo {
-  height: 20vh;
+  height: clamp(80px, 12vw, 160px);
 }
+
 .carousel-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  position: relative;
 }
+
 .carousel-list {
+  position: relative;
   flex: 1;
   overflow: hidden;
 }
+
+/* Gradient fade at edges */
+.carousel-list::before,
+.carousel-list::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.carousel-list::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent);
+}
+
+.carousel-list::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.4), transparent);
+}
+
+/* ===== Track & Poster ===== */
 .slider-content {
   display: flex;
+  gap: 16px;
   transition: transform 0.5s ease-in-out;
+  padding: 0 48px;
 }
 
-.slider-content li {
-  list-style: none;
+.poster {
   flex: 0 0 auto;
-  width: 220px;
-  height: 280px;
-  margin: 0 14px;
+  width: 100px;
+  height: 150px;
+  border-radius: 8px;
   overflow: hidden;
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* optionnel : effet carte */
-  transition: transform 0.3s ease;
+  background: transparent;
+  position: relative;
+  transition: transform 0.25s ease, z-index 0.25s ease;
 }
 
-.slider-content li:hover {
-  transform: scale(1.03);
+.poster:hover {
+  transform: scale(1.1) translateY(-4px);
+  z-index: 3;
 }
 
-.slider-content img {
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
+.poster img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
-  aspect-ratio: 220 / 280;
+  border-radius: inherit;
 }
 
+/* ===== Arrows ===== */
 .arrow {
-  width: 64px;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 64px; /* bigger click area */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 3;
 }
+
+.carousel-container:hover .arrow {
+  opacity: 1;
+}
+
+.arrow.prev {
+  left: 0;
+}
+
+.arrow.next {
+  right: 0;
+}
+
 .arrow-icon {
-  width: 48px;
+  width: 30px; /* bigger icon */
 }
+
 .arrow-icon.rotated {
   transform: rotate(180deg);
+}
+
+/* ===== Accessibility ===== */
+.arrow:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 </style>
