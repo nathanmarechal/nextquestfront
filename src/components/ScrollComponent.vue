@@ -20,8 +20,14 @@
       <div class="carousel-list" ref="carousel">
         <ul class="slider-content" :style="{ transform: slideTransform }">
           <li v-for="(game, index) in games" :key="index" class="poster">
-            <router-link :to="`/game/${game.title}`" tabindex="-1">
-              <img :src="game.image" :alt="game.title" draggable="false" />
+            <router-link :to="`/game/${slugify(game.name)}`" tabindex="-1">
+              <img
+                :src="`https:${game.cover_url}`"
+                :alt="game.name"
+                :title="game.name"
+                draggable="false"
+                loading="lazy"
+              />
             </router-link>
           </li>
         </ul>
@@ -64,9 +70,6 @@ export default {
     return {
       currentIndex: 0,
       hover: false,
-      /**
-       * Poster width + horizontal gap ( 100px + 16px = 116px )
-       */
       slideWidth: 116,
       intervalId: null
     }
@@ -100,6 +103,9 @@ export default {
     stopAutoScroll () {
       clearInterval(this.intervalId)
       this.intervalId = null
+    },
+    slugify (text) {
+      return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
     }
   },
   mounted () {

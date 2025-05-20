@@ -9,7 +9,7 @@
         </div>
 
         <div v-if="showInput" class="input-section">
-          <textarea v-model="newReview" placeholder="Écris ton avis ici..." class="input-textarea"></textarea>
+          <textarea v-model="newReview" placeholder="write your review here..." class="input-textarea"></textarea>
           <button @click="submitReview" class="submit-btn">Envoyer</button>
         </div>
 
@@ -25,7 +25,7 @@
 
       <!-- Colonne DROITE : Question + Pouces centrés -->
       <div class="right-column">
-        <p class="big-question">Would you recommend it?</p>
+        <p class="big-question">Did you like this game ?</p>
         <div class="thumbs-centered">
           <img src="@/assets/Pouce_rouge.png" alt="Thumbs Down" class="thumb" @click="vote('down')" />
           <img src="@/assets/Pouce_Bleu.png" alt="Thumbs Up" class="thumb" @click="vote('up')" />

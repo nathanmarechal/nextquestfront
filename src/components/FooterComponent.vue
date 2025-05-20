@@ -1,7 +1,7 @@
 <template>
   <footer class="site-footer">
     <div class="footer-content">
-      <img :src="logo" alt="Logo" class="footer-logo" />
+      <img src="../assets/NextQuest.png" alt="Logo" class="footer-logo" />
       <div class="footer-right">
         <p class="footer-text">© 2025 Nathan MARECHAL. Tous droits réservés.</p>
         <a href="/CGU" target="_blank" class="cgu-link">CGU</a>
@@ -11,14 +11,7 @@
 </template>
 
 <script>
-export default {
-  props: {
-    logo: {
-      type: String,
-      required: true
-    }
-  }
-}
+
 </script>
 
 <style scoped>
