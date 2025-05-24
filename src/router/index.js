@@ -22,6 +22,11 @@ const routes = [
     path: '/CGU',
     name: 'CGU',
     component: CGUPage
+  },
+  {
+    path: '/recherche',
+    name: 'recherche',
+    component: () => import('../views/ResearchPage.vue')
   }
 ]
 

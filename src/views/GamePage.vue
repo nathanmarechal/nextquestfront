@@ -44,7 +44,7 @@ export default {
         themes: ['Fantaisie', 'Héroïque'],
         perspectives: ['Troisième personne', 'Vue isométrique']
       },
-      gameList:null,
+      gameList:[],
     }
   },
   computed: {
@@ -56,11 +56,19 @@ export default {
       } else {
         return require('@/assets/default_game.jpg') // ton image locale de secours
       }
-    }  },
+    }
+  },
   created () {
-    this.getGamebyNameMethod(this.gameName)
+    const decodedName = decodeURIComponent(this.gameName)
+    this.getGamebyNameMethod(decodedName)
+
+    console.log('Dans le created de gamePage' + decodedName)
     this.getRecommendedGamesMethod()
   },
+  watch: {
+    gameName: 'loadGameData' // Surveille les changements de gameName
+  },
+
   methods: {
     ...mapActions(['getGameByName', 'getRecommendedGames']),
 
@@ -72,13 +80,34 @@ export default {
       return url
     },
 
+    async loadGameData () {
+      console.log('Chargement des données pour le jeu :', this.gameName)
+      await this.getGamebyNameMethod(this.gameName)
+      await this.getRecommendedGamesMethod()
+      await this.getTwitchStreamsMethod(this.gameName) // Recharge les streams Twitch
+    },
 
-    async getGamebyNameMethod (name) {
-      this.game = await this.getGameByName(name)
-      console.log('Dans le created')
-      console.log(JSON.stringify(this.game))
-      console.log(this.game.name)
-      console.log(this.game.cover_url)
+    async getTwitchStreamsMethod (name) {
+      this.gameStreams = await this.getTwitchStreams({ game_name: name })
+      console.log('Streams Twitch chargés :', this.gameStreams)
+    },
+
+
+
+    async getGamebyNameMethod(name) {
+      try {
+        const res = await this.getGameByName(name);
+        if (res?.error) {
+          console.warn('Erreur API (jeu non trouvé)', res.data);
+          this.error = 'Jeu non trouvé';
+          return;
+        }
+        this.game = res;
+        console.log('Jeu chargé :', this.game);
+      } catch (err) {
+        console.error('Erreur lors du chargement du jeu :', err);
+        this.error = 'Erreur de chargement';
+      }
     },
 
     async getRecommendedGamesMethod () {

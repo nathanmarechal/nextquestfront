@@ -20,7 +20,7 @@
       <div class="carousel-list" ref="carousel">
         <ul class="slider-content" :style="{ transform: slideTransform }">
           <li v-for="(game, index) in games" :key="index" class="poster">
-            <router-link :to="`/game/${slugify(game.name)}`" tabindex="-1">
+            <router-link :to="`/game/${encodeURIComponent(game.name)}`" tabindex="-1" @click.native="scrollToTop">
               <img
                 :src="`https:${game.cover_url}`"
                 :alt="game.name"
@@ -81,6 +81,9 @@ export default {
     }
   },
   methods: {
+    scrollToTop () {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
     visibleCount () {
       const container = this.$refs.carousel?.clientWidth || 840
       return Math.floor(container / this.slideWidth)
@@ -104,9 +107,6 @@ export default {
       clearInterval(this.intervalId)
       this.intervalId = null
     },
-    slugify (text) {
-      return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
-    }
   },
   mounted () {
     this.startAutoScroll()

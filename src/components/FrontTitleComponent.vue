@@ -33,43 +33,54 @@ export default {
       twitchEmbedUrl: null
     }
   },
-  async mounted () {
-    const clientId = '348xisw17vsxtq23qsp7rsov21pdfh' // Remplacez par votre client_id
-    const accessToken = 'gkwqbxls8d8e90cp3f2arfwe43ecnp' // Remplacez par votre access_token
-    const gameName = this.title
+  watch: {
+    title: {
+      immediate: true, // Exécute la méthode dès le montage
+      handler: 'fetchTwitchData'
+    }
+  },
+  methods: {
+    async fetchTwitchData () {
+      const clientId = '348xisw17vsxtq23qsp7rsov21pdfh' // Remplacez par votre client_id
+      const accessToken = 'gkwqbxls8d8e90cp3f2arfwe43ecnp' // Remplacez par votre access_token
+      const gameName = this.title
 
-    try {
-      // Récupérer l'ID du jeu
-      const gameResponse = await fetch(`https://api.twitch.tv/helix/games?name=${encodeURIComponent(gameName)}`, {
-        headers: {
-          'Client-ID': clientId,
-          Authorization: `Bearer ${accessToken}`
+      try {
+        // Récupérer l'ID du jeu
+        const gameResponse = await fetch(`https://api.twitch.tv/helix/games?name=${encodeURIComponent(gameName)}`, {
+          headers: {
+            'Client-ID': clientId,
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+        const gameData = await gameResponse.json()
+        if (!gameData.data || gameData.data.length === 0) {
+          console.error('Jeu non trouvé sur Twitch')
+          this.twitchEmbedUrl = null
+          return
         }
-      })
-      const gameData = await gameResponse.json()
-      if (!gameData.data || gameData.data.length === 0) {
-        console.error('Jeu non trouvé sur Twitch')
-        return
-      }
-      const gameId = gameData.data[0].id
+        const gameId = gameData.data[0].id
 
-      // Récupérer le streamer le plus regardé
-      const streamsResponse = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gameId}&first=1`, {
-        headers: {
-          'Client-ID': clientId,
-          Authorization: `Bearer ${accessToken}`
+        // Récupérer le streamer le plus regardé
+        const streamsResponse = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gameId}&first=1`, {
+          headers: {
+            'Client-ID': clientId,
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+        const streamsData = await streamsResponse.json()
+        if (!streamsData.data || streamsData.data.length === 0) {
+          console.error('Aucun stream trouvé pour ce jeu')
+          this.twitchEmbedUrl = null
+          return
         }
-      })
-      const streamsData = await streamsResponse.json()
-      if (!streamsData.data || streamsData.data.length === 0) {
-        console.error('Aucun stream trouvé pour ce jeu')
-        return
-      }
-      const topStreamer = streamsData.data[0].user_name
+        const topStreamer = streamsData.data[0].user_name
 
-      this.twitchEmbedUrl = `https://player.twitch.tv/?channel=${topStreamer}&parent=localhost&parent=127.0.0.1`
-    } catch (error) {
-      console.error('Erreur lors de la récupération des données Twitch :', error)
+        this.twitchEmbedUrl = `https://player.twitch.tv/?channel=${topStreamer}&parent=localhost&parent=127.0.0.1`
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données Twitch :', error)
+        this.twitchEmbedUrl = null
+      }
     }
   }
 }

@@ -52,7 +52,7 @@ export default {
     async getTendances () {
       this.gameListTendances = await this.getTendanceStore()
       console.log('Dans le created')
-      console.log(JSON.stringify(this.gameListTendances))
+      console.log(this.gameListTendances)
       console.log(this.gameListTendances.name)
       console.log(this.gameListTendances[0].cover_url)
     }
