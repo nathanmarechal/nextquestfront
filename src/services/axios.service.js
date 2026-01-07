@@ -2,7 +2,7 @@ import axios from 'axios'
 import store from '@/store'
 
 const axiosAgent = axios.create({
-  baseURL: 'http://127.0.0.1:8000/',
+  baseURL: (import.meta?.env?.VITE_API_BASE_URL ?? process.env.VUE_APP_API_BASE_URL ?? '/api'),
   withCredentials: true
 })
 
