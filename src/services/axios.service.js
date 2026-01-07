@@ -1,8 +1,15 @@
 import axios from 'axios'
 import store from '@/store'
 
+const rawBase =
+  (import.meta?.env?.VITE_API_BASE_URL ??
+    process.env.VUE_APP_API_BASE_URL ??
+    '/api')
+
+const baseURL = String(rawBase).replace(/\/+$/, '') // enlève les / finaux
+
 const axiosAgent = axios.create({
-  baseURL: (import.meta?.env?.VITE_API_BASE_URL ?? process.env.VUE_APP_API_BASE_URL ?? '/api'),
+  baseURL: '/api',
   withCredentials: true
 })
 
