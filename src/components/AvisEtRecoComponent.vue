@@ -5,12 +5,30 @@
       <div class="left-column">
         <div class="avis-bar">
           <img src="@/assets/Avis.png" alt="Avis" class="logo-large" />
-          <img src="@/assets/plus.png" alt="Add Review" class="plus-icon" @click="toggleInput" />
+          <img v-if="isAuthenticated" src="@/assets/plus.png" alt="Add Review" class="plus-icon" @click="toggleInput" />
         </div>
 
-        <div v-if="showInput" class="input-section">
-          <textarea v-model="newReview" placeholder="write your review here..." class="input-textarea"></textarea>
-          <button @click="submitReview" class="submit-btn">Envoyer</button>
+        <div v-if="isAuthenticated">
+          <div v-if="showInput" class="input-section">
+            <textarea v-model="newReview" placeholder="write your review here..." class="input-textarea"></textarea>
+            <div class="thumb-selection">
+              <img
+                src="@/assets/Pouce_Bleu.png"
+                alt="Thumbs Up"
+                class="thumb"
+                :class="{ selected: reviewScore === 1 }"
+                @click="selectReviewScore(1)"
+              />
+              <img
+                src="@/assets/Pouce_rouge.png"
+                alt="Thumbs Down"
+                class="thumb"
+                :class="{ selected: reviewScore === -1 }"
+                @click="selectReviewScore(-1)"
+              />
+            </div>
+            <button @click="submitReview" class="submit-btn">Envoyer</button>
+          </div>
         </div>
 
         <div class="reviews">
@@ -40,21 +58,38 @@
       <div class="right-column">
         <p class="big-question">Did you like this game ?</p>
         <div class="thumbs-centered">
-          <img src="@/assets/Pouce_rouge.png" alt="Thumbs Down" class="thumb" @click="vote('down')" />
-          <img src="@/assets/Pouce_Bleu.png" alt="Thumbs Up" class="thumb" @click="vote('up')" />
+          <img
+            src="@/assets/Pouce_rouge.png"
+            alt="Thumbs Down"
+            class="thumb"
+            :class="{ selected: isLiked === -1 }"
+            @click="toggleLike(-1)"
+          />
+          <img
+            src="@/assets/Pouce_Bleu.png"
+            alt="Thumbs Up"
+            class="thumb"
+            :class="{ selected: isLiked === 1 }"
+            @click="toggleLike(1)"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
+
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'AvisEtRecoComponent',
   props: {
     title: {
       type: String,
+      required: true
+    },
+    app_id: {
+      type: Number,
       required: true
     }
   },
@@ -63,17 +98,27 @@ export default {
       reviews: [],
       showInput: false,
       newReview: '',
+      reviewScore: null,
+      isLiked : null,
       offset: 0,
       limit: 5
     }
   },
+  computed:{
+    ...mapState(['userToken', 'userEmail', 'userId']),
+    isAuthenticated() {
+      return !!this.userToken
+    }
+  },
   created () {
+    this.checkUserLike()
     this.getReview(this.title)
     console.log('AvisEtRecoComponent created')
     console.log(this.title)
+    console.log(this.app_id)
   },
   methods: {
-    ...mapActions(['getReviewByGameName']),
+    ...mapActions(['getReviewByGameName', 'postReviewStore', 'isLikedStore', 'likeGameStore']),
 
     async getReview (gameName) {
       try {
@@ -81,6 +126,36 @@ export default {
         this.reviews = [...this.reviews, ...(response || [])]
       } catch (error) {
         console.error('Erreur lors de la récupération des avis :', error)
+      }
+    },
+
+    async toggleLike(likeValue) {
+      try {
+        const liked = likeValue === 1;
+        await this.likeGameStore({ user_id: this.userId, app_id: this.app_id, liked });
+
+        // Met à jour l'état local après succès
+        this.isLiked = this.isLiked === likeValue ? 0 : likeValue;
+      } catch (error) {
+        console.error('Erreur lors du like/dislike :', error);
+      }
+    },
+
+
+    async checkUserLike() {
+      try {
+        const appId = parseInt(this.app_id, 10);
+        const userIdNumber = parseInt(this.userId, 10);
+        const result = await this.isLikedStore({ user_id: userIdNumber, app_id: appId });
+        if (result === 1) {
+          this.isLiked = 1;
+        } else if (result === -1) {
+          this.isLiked = -1;
+        } else {
+          this.isLiked = 0;
+        }
+      } catch (error) {
+        console.error(error);
       }
     },
 
@@ -99,20 +174,45 @@ export default {
     toggleInput () {
       this.showInput = !this.showInput
     },
-    submitReview () {
-      if (this.newReview.trim()) {
-        this.reviews.push({
-          user_name: 'Utilisateur anonyme',
-          review: this.newReview.trim(),
-          review_score: 0,
-          date_review: new Date().toISOString().split('T')[0]
-        })
-        this.newReview = ''
-        this.showInput = false
-      }
+
+    selectReviewScore (score) {
+      this.reviewScore = score
     },
-    vote (type) {
-      alert(`Tu as voté ${type === 'up' ? '👍' : '👎'}`)
+
+    async submitReview () {
+      if (this.newReview.trim() && this.reviewScore !== null) {
+        try {
+          const appId = parseInt(this.app_id, 10);
+          if (isNaN(appId)) {
+            throw new Error('app_id doit être un entier valide.');
+          }
+
+          const response = await this.postReviewStore({
+            id_user: this.userId,
+            app_id: appId,
+            review: this.newReview.trim(),
+            review_score: this.reviewScore,
+            date_review: new Date().toISOString().split('T')[0],
+            name_user: this.userEmail || 'Utilisateur anonyme'
+          });
+          console.log('Avis envoyé :', response);
+
+          this.reviews.push({
+            user_name: this.userEmail || 'Utilisateur anonyme',
+            review: this.newReview.trim(),
+            review_score: this.reviewScore,
+            date_review: new Date().toISOString().split('T')[0]
+          });
+
+          this.newReview = '';
+          this.reviewScore = null;
+          this.showInput = false;
+        } catch (error) {
+          console.error('Erreur lors de l\'envoi de l\'avis :', error);
+        }
+      } else {
+        alert('Veuillez remplir le texte de l\'avis et sélectionner un pouce.');
+      }
     }
   }
 }
@@ -346,4 +446,29 @@ export default {
 .load-more-btn:hover {
   background-color: #FFC300;
 }
+
+.thumb-selection {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.thumb {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.thumb.selected {
+  transform: scale(1.2);
+  border: 2px solid #FFD700;
+  border-radius: 50%;
+}
+
+.thumb:not(.selected) {
+  border: none;
+}
+
 </style>

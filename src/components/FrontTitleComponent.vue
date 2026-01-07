@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: 'GameDetailsComponent',
   props: {
@@ -30,58 +32,53 @@ export default {
   },
   data () {
     return {
-      twitchEmbedUrl: null
+      twitchEmbedUrl: null,
+      twitchStream: null,
+      twitchLoading: false,
+      twitchError: null,
     }
   },
   watch: {
     title: {
       immediate: true, // Exécute la méthode dès le montage
       handler: 'fetchTwitchData'
+
     }
   },
   methods: {
-    async fetchTwitchData () {
-      const clientId = '348xisw17vsxtq23qsp7rsov21pdfh' // Remplacez par votre client_id
-      const accessToken = 'gkwqbxls8d8e90cp3f2arfwe43ecnp' // Remplacez par votre access_token
-      const gameName = this.title
+    ...mapActions(['getLiveTwitchStreams']),
+    async fetchTwitchData(gameName) {
+      this.twitchLoading = true
+      this.twitchError = null
+      this.twitchStream = null
 
       try {
-        // Récupérer l'ID du jeu
-        const gameResponse = await fetch(`https://api.twitch.tv/helix/games?name=${encodeURIComponent(gameName)}`, {
-          headers: {
-            'Client-ID': clientId,
-            Authorization: `Bearer ${accessToken}`
-          }
-        })
-        const gameData = await gameResponse.json()
-        if (!gameData.data || gameData.data.length === 0) {
-          console.error('Jeu non trouvé sur Twitch')
-          this.twitchEmbedUrl = null
-          return
-        }
-        const gameId = gameData.data[0].id
+        const response = await this.$store.dispatch('getLiveTwitchStreams', gameName)
+        console.log("Réponse API Twitch :", response)
 
-        // Récupérer le streamer le plus regardé
-        const streamsResponse = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gameId}&first=1`, {
-          headers: {
-            'Client-ID': clientId,
-            Authorization: `Bearer ${accessToken}`
-          }
-        })
-        const streamsData = await streamsResponse.json()
-        if (!streamsData.data || streamsData.data.length === 0) {
-          console.error('Aucun stream trouvé pour ce jeu')
-          this.twitchEmbedUrl = null
-          return
-        }
-        const topStreamer = streamsData.data[0].user_name
-
-        this.twitchEmbedUrl = `https://player.twitch.tv/?channel=${topStreamer}&parent=localhost&parent=127.0.0.1`
-      } catch (error) {
-        console.error('Erreur lors de la récupération des données Twitch :', error)
+        const stream = Array.isArray(response) ? response[0] : response
         this.twitchEmbedUrl = null
+        if (!stream) return
+
+        // ✅ réactif + pas de surprise
+        this.twitchStream = {
+          user_login: stream.user_login,
+          user_name: stream.user_name,
+          title: stream.title,
+          viewer_count: stream.viewer_count,
+          started_at: stream.started_at,
+          thumbnail_url: stream.thumbnail_url,
+        }
+        const parent = window.location.hostname // "localhost" ou ton domaine
+        this.twitchEmbedUrl =
+          `https://player.twitch.tv/?channel=${encodeURIComponent(stream.user_login)}&parent=${encodeURIComponent(parent)}&autoplay=true`
+      } catch (e) {
+        console.error("Erreur Twitch:", e)
+        this.twitchError = "Impossible de récupérer Twitch"
+      } finally {
+        this.twitchLoading = false
       }
-    }
+    },
   }
 }
 </script>

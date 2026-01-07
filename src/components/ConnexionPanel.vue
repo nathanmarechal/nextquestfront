@@ -7,12 +7,12 @@
       </div>
 
       <form @submit.prevent="submitForm">
-        <div v-if="isSignup" class="form-group">
+        <div  class="form-group">
           <label>Email</label>
           <input type="email" v-model="email" required />
         </div>
 
-        <div class="form-group">
+        <div v-if="isSignup" class="form-group">
           <label>Nom d'utilisateur</label>
           <input type="text" v-model="username" required />
         </div>
@@ -20,6 +20,11 @@
         <div class="form-group">
           <label>Mot de passe</label>
           <input type="password" v-model="password" required />
+        </div>
+
+        <div class="form-group" v-if="isSignup">
+          <label>Birth Date</label>
+          <input type="date" v-model="birthdate" required />
         </div>
 
         <div v-if="isSignup" class="form-group checkbox-group">
@@ -41,6 +46,8 @@
   </transition>
 </template>
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: 'ConnexionPanel',
   props: ['visible'],
@@ -50,18 +57,66 @@ export default {
       email: '',
       username: '',
       password: '',
+      birthdate: '',
       acceptedCGU: false
     }
   },
   methods: {
-    submitForm () {
-      const payload = {
-        mode: this.isSignup ? 'signup' : 'login',
+    ...mapActions(['createAccountStore', 'loginStore']),
+    logSubmit () {
+      console.log('Bouton de soumission cliqué' + this.isSignup + this.email);
+    },
+    submitForm() {
+      if (this.isSignup) {
+        this.createAction()
+      } else {
+        console.log('Connexion avec les données :', {
+          email: this.email,
+          password: this.password
+        })
+        const payload = {
+          email: this.email,
+          password: this.password
+        }
+        this.loginStore(payload)
+          .then((response) => {
+            console.log('Connexion réussie :', response)
+            this.$emit('connected', {
+              mode: 'login',
+              token: response.access_token,
+              userId: response.user_id
+            })
+            this.$emit('close')
+            window.location.reload()
+          })
+          .catch((error) => {
+            console.error('Erreur lors de la connexion :', error)
+            alert('Erreur lors de la connexion. Veuillez vérifier vos identifiants.')
+          })
+      }
+    },
+    createAction () {
+      console.log('Création de compte avec les données :', {
         email: this.email,
         username: this.username,
-        password: this.password
-      }
-      this.$emit('connected', payload)
+        password: this.password,
+        birthdate: this.birthdate
+      });
+      const payload = {
+        email: this.email,
+        username: this.username,
+        password: this.password,
+        birthdate: this.birthdate
+      };
+      this.createAccountStore(payload)
+        .then(() => {
+          this.$emit('close');
+          this.$emit('accountCreated');
+        })
+        .catch(error => {
+          console.error('Erreur lors de la création du compte :', error);
+          alert('Erreur lors de la création du compte. Veuillez réessayer.');
+        });
     }
   }
 }

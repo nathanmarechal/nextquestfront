@@ -13,6 +13,24 @@ async function getRecommendedGamesFromApi ({user_id, top_n}) {
   return postRequest('/recommendation/', { user_id, top_n }, 'RECOMMENDEDGAMES')
 }
 
+async function isLikedService({user_id, app_id}){
+  let answer = await isLikedFromAPI({user_id, app_id})
+  return answer
+}
+
+async function isLikedFromAPI({user_id, app_id}){
+  return getRequest('review/check_like/' + user_id +'/' + app_id , 'ISLIKED')
+}
+
+async function likeGameService({user_id, app_id, liked}){
+  let answer = await likeGameFromAPI({user_id, app_id, liked})
+  return answer
+}
+
+async function likeGameFromAPI({user_id, app_id, liked}){
+  return postRequest('/review/like_game', { user_id, app_id, liked }, 'LIKEGAME')
+}
+
 async function getTendancesService () {
   let answer = await getTendancesFromApi()
   return answer
@@ -38,6 +56,21 @@ async function getCategoriesService () {
 
 async function getCategoriesFromAPI () {
   return getRequest('/game/filters', 'CATEGORIES')
+}
+
+async function getLiveTwitchStreamsService (game_name) {
+  let streams = await getLiveTwitchStreamsFromAPI(game_name)
+
+  if (!Array.isArray(streams) || streams.length === 0) {
+    return [] // ou null selon ton UI
+  }
+
+  const top = streams[0]
+  return top
+}
+
+async function getLiveTwitchStreamsFromAPI (game_name) {
+  return getRequest('/twitch/live/' + encodeURIComponent(game_name), 'LIVETWITCHSTREAMS')
 }
 
 async function getFilteredGames ({  offset,
@@ -94,4 +127,7 @@ export {
   , getGameByNameService
   , getCategoriesService
   , getFilteredGames
+  , isLikedService
+  , likeGameService
+  , getLiveTwitchStreamsService
 }

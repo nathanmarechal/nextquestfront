@@ -6,8 +6,10 @@
     />
     <GameDetailComponent :game="game"></GameDetailComponent>
     <AvisEtRecoComponent
+      v-if="game && game.app_id != null"
       :title="gameName"
-      ></AvisEtRecoComponent>
+      :app_id="Number(game.app_id)"
+    />
     <ScrollComponent
       :games="gameList"
       :logo="require('@/assets/Suggestions.png')"
